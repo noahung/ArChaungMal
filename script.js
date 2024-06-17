@@ -33,10 +33,15 @@ async function sendMessage() {
             body: JSON.stringify({ message: userInput })
         });
 
+        // Check if response is ok (status in the range 200-299)
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
         const data = await response.json();
 
         // Log the response for debugging
-        console.log(data);
+        console.log('API Response:', data);
 
         // Extract bot's reply from the response
         const botMessage = data.reply;  // Adjust this line based on the actual API response structure
@@ -60,7 +65,7 @@ async function sendMessage() {
         document.getElementById('user-input').value = '';
     } catch (error) {
         console.error('Error fetching bot reply:', error);
-        displayMessage('Bot', 'Error: Unable to get response from the server.');
+        displayMessage('Bot', `Error: ${error.message}`);
     }
 }
 
