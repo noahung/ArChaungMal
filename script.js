@@ -1,74 +1,44 @@
-// Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyDGExdHfXns3id2QmNcVZEigePdmUWGWh8",
-  authDomain: "archaung-8d0bc.firebaseapp.com",
-  projectId: "archaung-8d0bc",
-  storageBucket: "archaung-8d0bc.appspot.com",
-  messagingSenderId: "134281590603",
-  appId: "1:134281590603:web:2073b233a75b42a2afdace"
+/*
+ * Install the Generative AI SDK
+ *
+ * $ npm install @google/generative-ai
+ *
+ * See the getting started guide for more information
+ * https://ai.google.dev/gemini-api/docs/get-started/node
+ */
+
+const {
+  GoogleGenerativeAI,
+  HarmCategory,
+  HarmBlockThreshold,
+} = require("@google/generative-ai");
+
+const apiKey = process.env.AIzaSyDyXXfA_B1oOVHSt5W96NxvaN2q-vLDpXs;
+const genAI = new GoogleGenerativeAI(apiKey);
+
+const model = genAI.getGenerativeModel({
+  model: "gemini-1.5-flash",
+});
+
+const generationConfig = {
+  temperature: 1,
+  topP: 0.95,
+  topK: 64,
+  maxOutputTokens: 8192,
+  responseMimeType: "text/plain",
 };
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+async function run() {
+  const chatSession = model.startChat({
+    generationConfig,
+ // safetySettings: Adjust safety settings
+ // See https://ai.google.dev/gemini-api/docs/safety-settings
+    history: [
+    ],
+  });
 
-// Initialize Firestore
-const db = firebase.firestore();
-
-// Send message function
-async function sendMessage() {
-    const userInput = document.getElementById('user-input').value;
-    if (userInput.trim() === '') return;
-
-    // Display user message
-    displayMessage('You', userInput);
-
-    try {
-        // Call Gemini API
-        const response = await fetch('https://api.gemini.com/v1/your-endpoint', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer AIzaSyDyXXfA_B1oOVHSt5W96NxvaN2q-vLDpXs`
-            },
-            body: JSON.stringify({ message: userInput })
-        });
-
-        const data = await response.json();
-
-        // Log the response for debugging
-        console.log(data);
-
-        // Extract bot's reply from the response
-        const botMessage = data.reply;  // Adjust this line based on the actual API response structure
-
-        // Check if botMessage is undefined
-        if (botMessage === undefined) {
-            throw new Error('Bot reply is undefined. Please check the API response structure.');
-        }
-
-        // Display bot message
-        displayMessage('Bot', botMessage);
-
-        // Save messages to Firestore
-        await db.collection('messages').add({
-            user: userInput,
-            bot: botMessage,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        // Clear input
-        document.getElementById('user-input').value = '';
-    } catch (error) {
-        console.error('Error fetching bot reply:', error);
-        displayMessage('Bot', 'Error: Unable to get response from the server.');
-    }
+  const result = await chatSession.sendMessage("INSERT_INPUT_HERE");
+  console.log(result.response.text());
 }
 
-// Function to display message
-function displayMessage(sender, message) {
-    const chatBox = document.getElementById('chat-box');
-    const messageElement = document.createElement('div');
-    messageElement.textContent = `${sender}: ${message}`;
-    chatBox.appendChild(messageElement);
-    chatBox.scrollTop = chatBox.scrollHeight;
-}
+run();
