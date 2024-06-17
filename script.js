@@ -1,11 +1,11 @@
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDGExdHfXns3id2QmNcVZEigePdmUWGWh8",
-  authDomain: "archaung-8d0bc.firebaseapp.com",
-  projectId: "archaung-8d0bc",
-  storageBucket: "archaung-8d0bc.appspot.com",
-  messagingSenderId: "134281590603",
-  appId: "1:134281590603:web:2073b233a75b42a2afdace"
+    apiKey: "AIzaSyDGExdHfXns3id2QmNcVZEigePdmUWGWh8",
+    authDomain: "archaung-8d0bc.firebaseapp.com",
+    projectId: "archaung-8d0bc",
+    storageBucket: "archaung-8d0bc.appspot.com",
+    messagingSenderId: "134281590603",
+    appId: "1:134281590603:web:2073b233a75b42a2afdace"
 };
 
 // Initialize Firebase
@@ -23,14 +23,17 @@ async function sendMessage() {
     displayMessage('You', userInput);
 
     try {
+        // Correct API URL and endpoint
+        const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=YOUR_API_KEY'; // Replace YOUR_API_KEY with your actual API key
+
         // Call Gemini API
-        const response = await fetch('https://api.gemini.com/v1/your-endpoint', {
+        const response = await fetch(apiUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer AIzaSyDyXXfA_B1oOVHSt5W96NxvaN2q-vLDpXs`
+                'Authorization': `Bearer AIzaSyDyXXfA_B1oOVHSt5W96NxvaN2q-vLDpXs` // If an API key is required in the headers, otherwise remove this line
             },
-            body: JSON.stringify({ message: userInput })
+            body: JSON.stringify({ contents: [{ parts: [{ text: userInput }] }] })
         });
 
         // Check if response is ok (status in the range 200-299)
@@ -44,7 +47,7 @@ async function sendMessage() {
         console.log('API Response:', data);
 
         // Extract bot's reply from the response
-        const botMessage = data.reply;  // Adjust this line based on the actual API response structure
+        const botMessage = data.contents[0].parts[0].text; // Adjust this line based on the actual API response structure
 
         // Check if botMessage is undefined
         if (botMessage === undefined) {
@@ -66,14 +69,3 @@ async function sendMessage() {
     } catch (error) {
         console.error('Error fetching bot reply:', error);
         displayMessage('Bot', `Error: ${error.message}`);
-    }
-}
-
-// Function to display message
-function displayMessage(sender, message) {
-    const chatBox = document.getElementById('chat-box');
-    const messageElement = document.createElement('div');
-    messageElement.textContent = `${sender}: ${message}`;
-    chatBox.appendChild(messageElement);
-    chatBox.scrollTop = chatBox.scrollHeight;
-}
