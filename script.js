@@ -22,31 +22,46 @@ async function sendMessage() {
     // Display user message
     displayMessage('You', userInput);
 
-    // Call Gemini API
-    const response = await fetch('https://api.gemini.com/v1/your-endpoint', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer AIzaSyDyXXfA_B1oOVHSt5W96NxvaN2q-vLDpXs`
-        },
-        body: JSON.stringify({ message: userInput })
-    });
+    try {
+        // Call Gemini API
+        const response = await fetch('https://api.gemini.com/v1/your-endpoint', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer AIzaSyDyXXfA_B1oOVHSt5W96NxvaN2q-vLDpXs`
+            },
+            body: JSON.stringify({ message: userInput })
+        });
 
-    const data = await response.json();
-    const botMessage = data.reply;  // Adjust based on API response structure
+        const data = await response.json();
 
-    // Display bot message
-    displayMessage('Bot', botMessage);
+        // Log the response for debugging
+        console.log(data);
 
-    // Save messages to Firestore
-    await db.collection('messages').add({
-        user: userInput,
-        bot: botMessage,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    });
+        // Extract bot's reply from the response
+        const botMessage = data.reply;  // Adjust this line based on the actual API response structure
 
-    // Clear input
-    document.getElementById('user-input').value = '';
+        // Check if botMessage is undefined
+        if (botMessage === undefined) {
+            throw new Error('Bot reply is undefined. Please check the API response structure.');
+        }
+
+        // Display bot message
+        displayMessage('Bot', botMessage);
+
+        // Save messages to Firestore
+        await db.collection('messages').add({
+            user: userInput,
+            bot: botMessage,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        // Clear input
+        document.getElementById('user-input').value = '';
+    } catch (error) {
+        console.error('Error fetching bot reply:', error);
+        displayMessage('Bot', 'Error: Unable to get response from the server.');
+    }
 }
 
 // Function to display message
